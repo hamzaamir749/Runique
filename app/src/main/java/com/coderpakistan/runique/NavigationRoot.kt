@@ -1,22 +1,32 @@
 package com.coderpakistan.runique
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navDeepLink
 import com.coderpakistan.auth.presentation.intro.IntroScreenRoot
 import com.coderpakistan.auth.presentation.login.LoginScreenRoot
 import com.coderpakistan.auth.presentation.register.RegisterScreenRoot
+import com.coderpakistan.run.presentation.active_run.ActiveRunScreenRoot
+import com.coderpakistan.run.presentation.active_run.service.ActiveRunService
+import com.coderpakistan.run.presentation.run_overview.RunOverviewScreenRoot
 
 @Composable
-fun NavigationRoot(navController: NavHostController) {
+fun NavigationRoot(
+    navController: NavHostController,
+    isLoggedIn: Boolean,
+    onAnalyticsClick: () -> Unit
+) {
     NavHost(
         navController = navController,
-        startDestination = "auth"
+        startDestination = if (isLoggedIn) "run" else "auth"
     ) {
         authGraph(navController)
+        runGraph(navController, onAnalyticsClick)
     }
 }
 
@@ -53,7 +63,7 @@ private fun NavGraphBuilder.authGraph(navController: NavHostController) {
                 onLoginSuccess = {
                     navController.navigate("run") {
                         popUpTo("auth") {
-                          inclusive=true
+                            inclusive = true
                         }
                     }
                 },
@@ -64,6 +74,60 @@ private fun NavGraphBuilder.authGraph(navController: NavHostController) {
                             saveState = true
                         }
                         restoreState = true
+                    }
+                }
+            )
+        }
+    }
+}
+
+private fun NavGraphBuilder.runGraph(
+    navController: NavHostController,
+    onAnalyticsClick: () -> Unit
+) {
+    navigation(
+        startDestination = "run_overview",
+        route = "run"
+    ) {
+        composable(
+            route = "run_overview"
+        ) {
+            RunOverviewScreenRoot(onStartRunClick = {
+                navController.navigate("active_run")
+            }, onLogoutClick = {
+                navController.navigate("auth") {
+                    popUpTo("run") {
+                        inclusive = true
+                    }
+                }
+            }, onAnalyticsClick = {
+                onAnalyticsClick()
+            })
+        }
+        composable(
+            route = "active_run",
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "runique://active_run"
+            })
+        ) {
+            val context = LocalContext.current
+            ActiveRunScreenRoot(
+                onFinish = {
+                    navController.navigateUp()
+                },
+                onBack = {
+                    navController.navigateUp()
+                },
+                onServiceToggle = { shouldServiceRun ->
+                    if (shouldServiceRun) {
+                        context.startService(
+                            ActiveRunService.createStartIntent(
+                                context = context,
+                                activityClass = MainActivity::class.java
+                            )
+                        )
+                    } else {
+                        context.startService(ActiveRunService.createStopIntent(context = context))
                     }
                 }
             )

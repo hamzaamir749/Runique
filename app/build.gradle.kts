@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.runique.android.application.compose)
     alias(libs.plugins.runique.jvm.ktor)
-    alias(libs.plugins.mapsplatform.secrets.plugin)
 
 }
 
@@ -20,6 +19,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    dynamicFeatures += setOf(":analytics:analytics_feature")
 }
 
 dependencies {
