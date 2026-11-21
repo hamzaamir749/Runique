@@ -3,6 +3,12 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="11">
       <module name="Runique.analytics.ddomain" target="21" />
+      <module name="Runique.core.connectivity.data" target="21" />
+      <module name="Runique.core.notification" target="21" />
+      <module name="Runique.core.presentation.designsystem_wear" target="21" />
+      <module name="Runique.wear.app" target="21" />
+      <module name="Runique.wear.run.data" target="21" />
+      <module name="Runique.wear.run.presentation" target="21" />
     </bytecodeTargetLevel>
   </component>
 </project>
